@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADInspector — Agentic AD Security Analyzer</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #21262d;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --purple: #bc8cff;
+    --orange: #ffa657;
+    --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; }
+
+  /* ── Layout ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── Hero ── */
+  .hero { text-align: center; padding: 60px 0 40px; border-bottom: 1px solid var(--border); }
+  .ascii { font-family: var(--mono); font-size: 13px; line-height: 1.3; color: var(--accent); white-space: pre; display: inline-block; text-align: left; }
+  .tagline { color: var(--text-dim); margin-top: 16px; font-size: 15px; }
+  .badges { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+  .badge { background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-family: var(--mono); color: var(--text-dim); }
+  .badge.green { border-color: var(--green); color: var(--green); }
+  .badge.blue  { border-color: var(--accent); color: var(--accent); }
+  .badge.red   { border-color: var(--red);   color: var(--red); }
+  .badge.orange{ border-color: var(--orange); color: var(--orange); }
+
+  /* ── Sections ── */
+  h2 { font-size: 22px; color: var(--text); margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 16px; color: var(--accent); margin: 28px 0 10px; }
+  p  { color: var(--text-dim); margin-bottom: 12px; }
+  a  { color: var(--accent); text-decoration: none; }
+
+  /* ── Code ── */
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.5; color: var(--text); margin: 12px 0; }
+  code { font-family: var(--mono); font-size: 13px; background: var(--bg3); padding: 2px 6px; border-radius: 4px; color: var(--orange); }
+
+  /* ── Flow diagram ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 16px 0; }
+  .flow-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 13px; font-family: var(--mono); text-align: center; min-width: 120px; }
+  .flow-box.green { border-color: var(--green); color: var(--green); }
+  .flow-box.blue  { border-color: var(--accent); color: var(--accent); }
+  .flow-box.red   { border-color: var(--red);   color: var(--red); }
+  .flow-box.purple{ border-color: var(--purple); color: var(--purple); }
+  .flow-arrow { color: var(--text-dim); padding: 0 8px; font-size: 18px; }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th { background: var(--bg3); color: var(--text); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 600; }
+  td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: 12px; }
+  .phase-tag { display: inline-block; font-size: 10px; font-family: var(--mono); padding: 2px 7px; border-radius: 10px; font-weight: 600; border: 1px solid; }
+  .phase-recon    { color: var(--accent);  border-color: var(--accent); }
+  .phase-enum     { color: var(--purple);  border-color: var(--purple); }
+  .phase-cred     { color: var(--orange);  border-color: var(--orange); }
+  .phase-priv     { color: var(--red);     border-color: var(--red); }
+  .phase-lat      { color: var(--yellow);  border-color: var(--yellow); }
+
+  /* ── Grid cards ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .card h4 { font-size: 14px; color: var(--accent); margin-bottom: 8px; font-family: var(--mono); }
+  .card p  { font-size: 13px; color: var(--text-dim); margin: 0; }
+  .card.highlight { border-color: var(--accent); }
+
+  /* ── Checklist ── */
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); }
+  .check-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .check-item .dot.pending { background: var(--yellow); }
+
+  /* ── Security boxes ── */
+  .sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .sec-box { background: var(--bg2); border-left: 3px solid var(--green); border-radius: 6px; padding: 12px 16px; }
+  .sec-box h5 { font-size: 13px; color: var(--green); margin-bottom: 4px; font-family: var(--mono); }
+  .sec-box p { font-size: 12px; margin: 0; color: var(--text-dim); }
+
+  /* ── Architecture diagram ── */
+  .arch { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin: 16px 0; }
+  .arch-layer { margin-bottom: 4px; }
+  .arch pre { background: transparent; border: none; padding: 0; margin: 0; font-size: 12.5px; }
+
+  /* ── Footer ── */
+  footer { text-align: center; padding: 40px 0 20px; color: var(--text-dim); font-size: 13px; border-top: 1px solid var(--border); margin-top: 60px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ════════════════════════ HERO ════════════════════════ -->
+<div class="hero">
+  <pre class="ascii">   ___    ____  ____                           __
+  /   |  / __ \/  _/___  _________  ___  _____/ /_____  _____
+ / /| | / / / // // __ \/ ___/ __ \/ _ \/ ___/ __/ __ \/ ___/
+/ ___ |/ /_/ // // / / (__  ) /_/ /  __/ /__/ /_/ /_/ / /
+/_/  |_/_____/___/_/ /_/____/ .___/\___/\___/\__/\____/_/
+                            /_/
+          Agentic  Active Directory Security Analyzer</pre>
+  <p class="tagline">Mercado Libre — Offensive Security Team</p>
+  <div class="badges">
+    <span class="badge green">Python 3.10+</span>
+    <span class="badge blue">Gemini 2.0 Flash</span>
+    <span class="badge blue">OpenLDAP</span>
+    <span class="badge orange">Poetry</span>
+    <span class="badge red">Red Team</span>
+    <span class="badge">Multi-Agent</span>
+    <span class="badge">Auto-Expanding</span>
+  </div>
+</div>
+
+<!-- ════════════════════════ DESCRIPCIÓN ════════════════════════ -->
+<h2>¿Qué es ADInspector?</h2>
+<p>ADInspector es un sistema multi-agente de IA diseñado para <strong style="color:var(--text)">reconocimiento y análisis ofensivo de dominios LDAP / Active Directory</strong>. Combina consultas directas al servidor LDAP con generación automática de nuevas herramientas vía <strong style="color:var(--text)">Gemini 2.0 Flash</strong> cuando se detecta que ninguna herramienta existente puede responder la consulta del operador.</p>
+
+<div class="grid" style="margin-top:20px">
+  <div class="card highlight">
+    <h4>🤖 Auto-Expansión</h4>
+    <p>Cuando una consulta no puede responderse, Gemini genera código Python nuevo, lo valida, lo persiste y recarga el agente en tiempo real.</p>
+  </div>
+  <div class="card">
+    <h4>🔴 Enfoque Ofensivo</h4>
+    <p>12 herramientas que mapean las fases de un engagement: Recon → Enumeration → Credential Access → Privilege Escalation.</p>
+  </div>
+  <div class="card">
+    <h4>🏗️ Multi-Agente</h4>
+    <p>Coordinator + ExecutorAgent + GeneratorAgent con responsabilidades claras y flujo de orquestación explícito.</p>
+  </div>
+  <div class="card">
+    <h4>💾 Persistencia</h4>
+    <p>Herramientas generadas se guardan en YAML con hash SHA-256. Se recargan automáticamente en la próxima sesión.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════ FLUJO ════════════════════════ -->
+<h2>Flujo de Ejecución</h2>
+<div class="flow">
+  <div class="flow-box blue">Usuario</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-box">Coordinator</div>
+  <span class="flow-arrow">→</span>
+  <div class="flow-box" style="text-align:left;min-width:160px">¿Herramienta<br>existente?</div>
+</div>
+<div style="margin-left:60px;margin-top:8px">
+  <div class="flow" style="margin-bottom:8px">
+    <span class="flow-arrow" style="padding-left:0">SÍ →</span>
+    <div class="flow-box green">ExecutorAgent</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box">LDAPConnector</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box green">Respuesta</div>
+  </div>
+  <div class="flow">
+    <span class="flow-arrow" style="padding-left:0">NO →</span>
+    <div class="flow-box red">GeneratorAgent</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box" style="color:var(--purple);border-color:var(--purple)">Gemini API</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box">Valida + YAML</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box">Recarga</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box green">Respuesta</div>
+  </div>
+</div>
+
+<!-- ════════════════════════ ARQUITECTURA ════════════════════════ -->
+<h2>Arquitectura</h2>
+<div class="arch">
+<pre>
+┌───────────────────────────────────────────────────────────────────┐
+│                     CLI (interactive-10.py)                        │
+│   Comandos • Routing • Formateo por tipo de dato • Manejo errores │
+└──────────────────────────────┬────────────────────────────────────┘
+                               │
+┌──────────────────────────────▼────────────────────────────────────┐
+│                      Coordinator (agents.py)                       │
+│   Analiza capacidades • Elige estrategia • Gestiona estado         │
+└──────────────┬─────────────────────────────┬──────────────────────┘
+               │                             │
+┌──────────────▼──────────────┐  ┌───────────▼─────────────────────┐
+│       ExecutorAgent          │  │        GeneratorAgent            │
+│  ─────────────────────────  │  │  ─────────────────────────────  │
+│  • Herramientas base (12)   │  │  • analyze_query() → Gemini     │
+│  • Herramientas generadas   │  │  • generate_tool() → código     │
+│  • Verifica hash SHA-256    │  │  • _validate_code() → compile() │
+│  • exec() en sandbox        │  │  • register → YAML + hash       │
+└──────────────┬──────────────┘  └─────────────────────────────────┘
+               │
+┌──────────────▼──────────────┐  ┌─────────────────────────────────┐
+│       LDAPConnector          │  │       ToolRegistry (YAML)        │
+│  ─────────────────────────  │  │  ─────────────────────────────  │
+│  • Escape de filtros        │  │  • Persistencia entre sesiones   │
+│  • Reconexión automática    │  │  • Hash SHA-256 por herramienta  │
+│  • Decode bytes → str       │  │  • load() / save() / reset()    │
+└──────────────┬──────────────┘  └─────────────────────────────────┘
+               │
+┌──────────────▼──────────────┐
+│   OpenLDAP (dc=meli,dc=com) │
+└─────────────────────────────┘
+</pre>
+</div>
+
+<h3>Patrones de Diseño</h3>
+<div class="grid">
+  <div class="card"><h4>Singleton</h4><p><code>get_ldap_connector()</code> y <code>get_tool_registry()</code> — una instancia global por proceso.</p></div>
+  <div class="card"><h4>Strategy</h4><p>Coordinator elige entre ExecutorAgent (existente) y GeneratorAgent (generar nueva).</p></div>
+  <div class="card"><h4>Registry</h4><p>ALL_TOOLS (base) + ToolRegistry YAML (generadas). Dos niveles con diferente ciclo de vida.</p></div>
+  <div class="card"><h4>Chain of Responsibility</h4><p>Query → infer_tool → Gemini analyze → Gemini generate → exec sandbox → LDAP.</p></div>
+</div>
+
+<!-- ════════════════════════ HERRAMIENTAS ════════════════════════ -->
+<h2>Herramientas Disponibles</h2>
+
+<h3>🔵 Base (Obligatorias)</h3>
+<table>
+  <tr><th>Herramienta</th><th>Comando CLI</th><th>Descripción</th></tr>
+  <tr><td><code>get_current_user_info()</code></td><td><code>whoami</code></td><td>Usuario de sistema + datos LDAP + grupos</td></tr>
+  <tr><td><code>get_user_groups(username)</code></td><td><code>—</code></td><td>Grupos directos de un usuario específico</td></tr>
+</table>
+
+<h3>🔴 Ofensivas (12 total)</h3>
+<table>
+  <tr><th>Herramienta</th><th>CLI</th><th>Fase</th><th>Descripción</th></tr>
+  <tr>
+    <td><code>get_domain_info()</code></td><td><code>domain</code></td>
+    <td><span class="phase-tag phase-recon">Recon</span></td>
+    <td>Estructura del dominio, Base DN, servidor</td>
+  </tr>
+  <tr>
+    <td><code>get_all_users()</code></td><td><code>users</code></td>
+    <td><span class="phase-tag phase-recon">Recon</span></td>
+    <td>Todos los usuarios. Detecta cuentas de servicio (<code>svc_*</code>, <code>bot_*</code>)</td>
+  </tr>
+  <tr>
+    <td><code>get_all_groups()</code></td><td><code>groups</code></td>
+    <td><span class="phase-tag phase-enum">Enumeration</span></td>
+    <td>Todos los grupos con miembros. Detecta grupos sensibles</td>
+  </tr>
+  <tr>
+    <td><code>get_user_full_info(username)</code></td><td><code>user-info</code></td>
+    <td><span class="phase-tag phase-recon">Recon</span></td>
+    <td>Todos los atributos LDAP de un usuario (incluyendo <code>pager</code>, <code>info</code>)</td>
+  </tr>
+  <tr>
+    <td><code>get_user_memberships_recursive(username)</code></td><td><code>privilege</code></td>
+    <td><span class="phase-tag phase-priv">Privilege</span></td>
+    <td>Grupos directos + heredados. Detecta rutas de escalada</td>
+  </tr>
+  <tr>
+    <td><code>get_all_computers()</code></td><td><code>computers</code></td>
+    <td><span class="phase-tag phase-recon">Recon</span></td>
+    <td>Equipos registrados en <code>ou=computers</code></td>
+  </tr>
+  <tr>
+    <td><code>get_all_shares()</code></td><td><code>shares</code></td>
+    <td><span class="phase-tag phase-recon">Recon</span></td>
+    <td>Recursos compartidos en <code>ou=shares</code></td>
+  </tr>
+  <tr>
+    <td><code>get_policies()</code></td><td><code>policies</code></td>
+    <td><span class="phase-tag phase-cred">Credential</span></td>
+    <td>Políticas de contraseñas + PSOs. Calcula umbral seguro para Password Spray</td>
+  </tr>
+  <tr>
+    <td><code>get_spns()</code></td><td><code>spns</code></td>
+    <td><span class="phase-tag phase-cred">Credential</span></td>
+    <td>Cuentas con SPNs para Kerberoasting</td>
+  </tr>
+  <tr>
+    <td><code>get_delegations()</code></td><td><code>delegation</code></td>
+    <td><span class="phase-tag phase-priv">Privilege</span></td>
+    <td>Delegación Unconstrained / Constrained / RBCD</td>
+  </tr>
+  <tr>
+    <td><code>get_adcs_templates()</code></td><td><code>adcs-templates</code></td>
+    <td><span class="phase-tag phase-priv">Privilege</span></td>
+    <td>Templates ADCS. Detecta candidatos ESC1 / ESC2 / ESC3</td>
+  </tr>
+  <tr>
+    <td><code>get_gpos()</code></td><td><code>gpos</code></td>
+    <td><span class="phase-tag phase-lat">Lateral</span></td>
+    <td>Todas las GPOs con rutas SYSVOL</td>
+  </tr>
+</table>
+
+<h3>✨ Auto-generadas (ilimitadas)</h3>
+<p>Cuando una consulta no puede responderse con herramientas existentes, el sistema genera automáticamente una nueva función Python vía Gemini, la valida y la persiste.</p>
+<pre><code>>>> ask "encontrar usuarios con descripción de contractor"
+⚠️  No hay herramienta disponible para esta consulta.
+🤖 Consultando con IA para crear una herramienta nueva...
+✅ Nueva herramienta generada: search_contractor_users</code></pre>
+
+<!-- ════════════════════════ INSTALACIÓN ════════════════════════ -->
+<h2>Instalación y Uso</h2>
+
+<h3>1. Levantar el entorno LDAP</h3>
+<pre>cd open_ldap_files
+./setup-ldap.sh</pre>
+<p>Dominio: <code>meli.com</code> · Servidor: <code>ldap://localhost:389</code> · WebUI: <code>http://localhost:8080</code></p>
+
+<h3>2. Configurar variables de entorno</h3>
+<pre>cp .env.example .env
+# Editar .env y agregar GEMINI_API_KEY</pre>
+
+<h3>3. Instalar dependencias y ejecutar</h3>
+<pre>poetry install
+poetry shell
+poetry run python interactive-10.py</pre>
+
+<h3>Sesión de ejemplo</h3>
+<pre><span style="color:var(--text-dim)">>>> </span>whoami
+👤 Usuario: john.doe
+   Uid: john.doe  |  Mail: john.doe@meli.com
+   Grupos: all_users, developers
+
+<span style="color:var(--text-dim)">>>> </span>spns
+🎫 Cuentas Kerberoasteables (SPNs): 2
+    1. svc_ldap  (1 SPN)
+       └─ ldap/dc01.meli.com
+    2. svc_sql   (2 SPNs)
+       └─ MSSQLSvc/sql01.meli.com:1433
+   ⚡ Usar GetUserSPNs.py o Rubeus para solicitar TGS y crackear offline
+
+<span style="color:var(--text-dim)">>>> </span>domain-enum-all
+🌐 DOMAIN ENUM ALL — Enumeración Completa
+────────────────────────────────────────
+  🌐 Dominio ...
+  👥 Usuarios ...
+  📁 Grupos ...
+  🔑 Políticas ...
+  🎫 SPNs ...
+  🔄 Delegación ...</pre>
+
+<!-- ════════════════════════ SEGURIDAD ════════════════════════ -->
+<h2>Seguridad Implementada</h2>
+<div class="sec-grid">
+  <div class="sec-box">
+    <h5>LDAP Injection Prevention</h5>
+    <p><code>escape_filter_chars()</code> en todos los inputs antes de construir filtros. Previene <code>uid=*)) (&(objectClass=*</code></p>
+  </div>
+  <div class="sec-box">
+    <h5>Hash SHA-256 de herramientas</h5>
+    <p>Cada herramienta generada almacena su hash. Se verifica antes de ejecutar <code>exec()</code>. Hash incorrecto → herramienta ignorada.</p>
+  </div>
+  <div class="sec-box">
+    <h5>Sandbox de ejecución</h5>
+    <p><code>exec(code, namespace)</code> con namespace mínimo: solo <code>get_ldap_connector</code>, <code>logger</code> y tipos básicos.</p>
+  </div>
+  <div class="sec-box">
+    <h5>Validación de código generado</h5>
+    <p><code>compile()</code> verifica sintaxis + assert que la función tiene el nombre correcto antes de registrar.</p>
+  </div>
+  <div class="sec-box">
+    <h5>Credenciales via .env</h5>
+    <p>Sin defaults hardcodeados. Sin logging de passwords. <code>python-dotenv</code> carga desde archivo.</p>
+  </div>
+  <div class="sec-box">
+    <h5>Reconexión automática</h5>
+    <p><code>ldap.SERVER_DOWN</code> → <code>_reconnect()</code> → retry. Sin estados inconsistentes ante caída del servidor.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════ CRITERIOS ════════════════════════ -->
+<h2>Criterios del Challenge — Estado</h2>
+<div class="check-grid">
+  <div class="check-item"><div class="dot"></div>Conectividad exitosa con OpenLDAP</div>
+  <div class="check-item"><div class="dot"></div>Herramientas base implementadas</div>
+  <div class="check-item"><div class="dot"></div>Auto-generación de herramientas</div>
+  <div class="check-item"><div class="dot"></div>Arquitectura multi-agente</div>
+  <div class="check-item"><div class="dot"></div>Sistema de Reset</div>
+  <div class="check-item"><div class="dot"></div>Coordinación entre agentes</div>
+  <div class="check-item"><div class="dot"></div>Manejo robusto de errores</div>
+  <div class="check-item"><div class="dot"></div>Código generado sintácticamente correcto</div>
+  <div class="check-item"><div class="dot"></div>Herramientas con enfoque ofensivo</div>
+  <div class="check-item"></div><div class="check-item"><div class="dot"></div>Justificación del por qué (ARCHITECTURE.md)</div>
+  <div class="check-item"><div class="dot"></div>README y documentación técnica</div>
+  <div class="check-item"><div class="dot"></div>Poetry para dependencias</div>
+  <div class="check-item"><div class="dot pending"></div>Tests unitarios (pendiente)</div>
+  <div class="check-item"><div class="dot"></div>Repositorio GitHub</div>
+</div>
+
+<!-- ════════════════════════ STACK ════════════════════════ -->
+<h2>Stack Tecnológico</h2>
+<table>
+  <tr><th>Componente</th><th>Tecnología</th><th>Justificación</th></tr>
+  <tr><td>Lenguaje</td><td>Python 3.10+</td><td>Ecosistema de seguridad, LDAP, IA</td></tr>
+  <tr><td>IA Generativa</td><td>Gemini 2.0 Flash (directo)</td><td>Control total del prompt y flujo; sin overhead de frameworks intermedios</td></tr>
+  <tr><td>LDAP</td><td>python-ldap</td><td>Librería madura con soporte completo del protocolo RFC 4511</td></tr>
+  <tr><td>Persistencia</td><td>PyYAML</td><td>Formato legible + editable manualmente entre sesiones</td></tr>
+  <tr><td>Logging</td><td>loguru</td><td>Niveles estructurados (DEBUG/INFO/WARNING/ERROR) con formato limpio</td></tr>
+  <tr><td>Config</td><td>python-dotenv</td><td>Estándar para variables de entorno sin hardcoding</td></tr>
+  <tr><td>Dependencias</td><td>Poetry</td><td>Lockfile reproducible, entornos aislados</td></tr>
+</table>
+<p style="font-size:13px;margin-top:8px">ℹ️ <em>Se decidió <strong style="color:var(--text)">no usar LangChain/LangGraph</strong> para mantener el flujo de agentes explícito, auditable y sin abstracciones que oscurezcan el comportamiento. Cada paso es trazable directamente en el código.</em></p>
+
+<!-- ════════════════════════ ESTRUCTURA ════════════════════════ -->
+<h2>Estructura del Proyecto</h2>
+<pre>adinspector/
+├── interactive-10.py           ← CLI principal (entry point)
+├── pyproject.toml              ← Dependencias (Poetry)
+├── .env                        ← Variables de entorno
+├── .env.example                ← Plantilla
+├── README.md / ARCHITECTURE.md
+│
+├── ldap_agents/
+│   ├── config.py               ← LDAPConfig, AIConfig, SystemConfig
+│   ├── connector.py            ← LDAPConnector + reconexión automática
+│   ├── tools.py                ← 12 herramientas base + ofensivas
+│   ├── agents.py               ← ExecutorAgent, GeneratorAgent, Coordinator
+│   ├── persistence.py          ← ToolRegistry (YAML + SHA-256)
+│   ├── generated_tools/        ← Código generado (auto-creado)
+│   └── tools_registry.yaml     ← Registro persistente
+│
+└── open_ldap_files/
+    └── setup-ldap.sh</pre>
+
+<!-- ════════════════════════ DISCLAIMER ════════════════════════ -->
+<div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:8px;padding:16px 20px;margin-top:40px">
+  <p style="color:var(--red);font-weight:600;margin-bottom:6px">⚠️ Disclaimer</p>
+  <p style="margin:0;font-size:13px">Este software está diseñado <strong style="color:var(--text)">exclusivamente para pentesting autorizado</strong> en ambientes controlados. Usar únicamente en sistemas para los que se tiene autorización explícita.</p>
+</div>
+
+<footer>
+  <p>ADInspector &nbsp;·&nbsp; Mercado Libre — Offensive Security Team &nbsp;·&nbsp; 2025</p>
+  <p style="margin-top:6px;font-size:12px">Python · Gemini 2.0 Flash · OpenLDAP · Poetry</p>
+</footer>
+
+</div>
+</body>
+</html>
