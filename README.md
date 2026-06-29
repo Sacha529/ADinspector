@@ -157,7 +157,7 @@ flowchart LR
 | Herramienta | Comando CLI | Descripción |
 |---|---|---|
 | `get_current_user_info()` | `whoami` | Usuario de sistema + datos LDAP + grupos |
-| `get_user_groups(username)` | — | Grupos directos de un usuario específico |
+| `get_user_groups(username)` | `user-info` | Grupos directos de un usuario específico |
 
 ### 🔴 Ofensivas (12 total)
 
@@ -198,7 +198,7 @@ cd open_ldap_files
 ./setup-ldap.sh
 ```
 
-Dominio: `meli.com` · Servidor: `ldap://localhost:389` · WebUI: `http://localhost:8080`
+Dominio, Servidor, WebUI
 
 ### 2. Configurar variables de entorno
 
@@ -212,7 +212,7 @@ cp .env.example .env
 ```bash
 poetry install
 poetry shell
-poetry run python interactive-10.py
+poetry run python interactive.py
 ```
 
 ### Sesión de ejemplo
