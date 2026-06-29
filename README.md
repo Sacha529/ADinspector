@@ -10,7 +10,7 @@
           Agentic Active Directory Security Analyzer
 ```
 
-**Mercado Libre — Offensive Security Team**
+**Offensive Security Team**
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3fb950?style=flat-square&logo=python&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini-2.0_Flash-58a6ff?style=flat-square&logo=googlegemini&logoColor=white)
@@ -108,7 +108,7 @@ flowchart LR
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│                     CLI (interactive-10.py)                       │
+│                     CLI (interactive.py)                       │
 │   Comandos • Routing • Formateo por tipo de dato • Manejo errores │
 └───────────────────────────────┬───────────────────────────────────┘
                                 │
@@ -165,7 +165,7 @@ flowchart LR
 |---|---|---|---|
 | `get_domain_info()` | `domain` | 🔵 Recon | Estructura del dominio, Base DN, servidor |
 | `get_all_users()` | `users` | 🔵 Recon | Todos los usuarios. Detecta cuentas de servicio (`svc_*`, `bot_*`) |
-| `get_all_groups()` | `groups` | 🟣 Enumeration | Todos los grupos con miembros. Detecta grupos sensibles |
+| `get_all_groups()` | `groups` | 🟣 Enumeración |Todos los grupos con miembros. Detecta grupos sensibles |
 | `get_user_full_info(username)` | `user-info` | 🔵 Recon | Todos los atributos LDAP de un usuario (incluyendo `pager`, `info`) |
 | `get_user_memberships_recursive(username)` | `privilege` | 🔴 Privilege | Grupos directos + heredados. Detecta rutas de escalada |
 | `get_all_computers()` | `computers` | 🔵 Recon | Equipos registrados en `ou=computers` |
@@ -332,7 +332,7 @@ Sin defaults hardcodeados. Sin logging de passwords. `python-dotenv` carga desde
 
 ```
 adinspector/
-├── interactive-10.py           ← CLI principal (entry point)
+├── interactive.py           ← CLI principal (entry point)
 ├── pyproject.toml              ← Dependencias (Poetry)
 ├── .env                        ← Variables de entorno
 ├── .env.example                ← Plantilla
@@ -360,7 +360,7 @@ adinspector/
 
 <div align="center">
 
-ADInspector &nbsp;·&nbsp; Mercado Libre — Offensive Security Team &nbsp;·&nbsp; 2025
+ADInspector &nbsp;·&nbsp; Offensive Security Team &nbsp;·&nbsp; 2025
 
 <sub>Python · Gemini 2.0 Flash · OpenLDAP · Poetry</sub>
 
