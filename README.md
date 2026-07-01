@@ -292,29 +292,9 @@ Sin defaults hardcodeados. Sin logging de passwords. `python-dotenv` carga desde
 </table>
 
 ---
-
-## Criterios del challenge — Estado
-
-- [x] Conectividad exitosa con OpenLDAP
-- [x] Herramientas base implementadas
-- [x] Auto-generación de herramientas
-- [x] Arquitectura multi-agente
-- [x] Sistema de Reset
-- [x] Coordinación entre agentes
-- [x] Manejo robusto de errores
-- [x] Código generado sintácticamente correcto
-- [x] Herramientas con enfoque ofensivo
-- [x] Justificación del por qué (ARCHITECTURE.md)
-- [x] README y documentación técnica
-- [x] Poetry para dependencias
-- [ ] Tests unitarios (pendiente)
-- [x] Repositorio GitHub
-
----
-
 ## Stack tecnológico
 
-| Componente | Tecnología | Justificación |
+| Componente | Tecnología |
 |---|---|---|
 | Lenguaje | Python 3.10+ | Ecosistema de seguridad, LDAP, IA |
 | IA Generativa | Gemini 2.0 Flash (directo) | Control total del prompt y flujo; sin overhead de frameworks intermedios |
@@ -336,7 +316,7 @@ adinspector/
 ├── pyproject.toml              ← Dependencias (Poetry)
 ├── .env                        ← Variables de entorno
 ├── .env.example                ← Plantilla
-├── README.md / ARCHITECTURE.md
+├── README.md
 │
 ├── ldap_agents/
 │   ├── config.py               ← LDAPConfig, AIConfig, SystemConfig
